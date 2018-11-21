@@ -1,0 +1,35 @@
+/*
+ * ${basePackage}
+ * ${name}
+ * ${endpoint}
+ */
+package ${basePackage}.api.services;
+
+import ${basePackage}.api.dto.${name}DTO;
+import ${basePackage}.api.dts.${name}DTS;
+import ${basePackage}.controllers.${name}Controller;
+import ${basePackage}.persistence.entities.${name};
+import eu.lpinto.universe.api.services.AbstractServiceCRUD;
+import javax.ejb.EJB;
+import javax.ws.rs.Path;
+
+/**
+ * REST CRUD service for ${name}.
+ *
+ * @author Universe Framework's script
+ */
+@Path("${endpoint}")
+public class ${name}Service extends AbstractServiceCRUD<${name}, ${name}DTO, ${name}Controller, ${name}DTS> {
+
+    @EJB
+    private ${name}Controller controller;
+
+    public ${name}Service() {
+        super(${name}DTS.T);
+    }
+
+    @Override
+    protected ${name}Controller getController() {
+        return controller;
+    }
+}

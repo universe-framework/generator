@@ -1,0 +1,34 @@
+/*
+ * ${package}
+ * ${entityPackage}
+ * ${facadePackage}
+ * ${name}
+ */
+package ${package};
+
+import ${entityPackage}.${name};
+import ${facadePackage}.${name}Facade;
+import eu.lpinto.universe.controllers.AbstractControllerCRUD;
+import javax.ejb.EJB;
+import javax.ejb.Stateless;
+
+/**
+ * Controller for ${name} entity.
+ *
+ * @author Universe Framework's script
+ */
+@Stateless
+public class ${name}Controller extends AbstractControllerCRUD<${name}> {
+
+    @EJB
+    private ${name}Facade facade;
+
+    public ${name}Controller() {
+        super(${name}.class.getCanonicalName());
+    }
+
+    @Override
+    protected ${name}Facade getFacade() {
+        return facade;
+    }
+}

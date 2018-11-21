@@ -1,0 +1,33 @@
+/*
+ * ${package}
+ * ${entityPackage}
+ * ${name}
+ */
+package ${package};
+
+import ${entityPackage}.${name};
+import eu.lpinto.universe.persistence.facades.AbstractFacade;
+import javax.ejb.Stateless;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+
+/**
+ * JPA facade for ${name} entity.
+ *
+ * @author Universe Framework's script
+ */
+@Stateless
+public class ${name}Facade extends AbstractFacade<${name}> {
+
+    @PersistenceContext
+    private EntityManager em;
+
+    public ${name}Facade() {
+        super(${name}.class);
+    }
+
+    @Override
+    protected EntityManager getEntityManager() {
+        return em;
+    }
+}

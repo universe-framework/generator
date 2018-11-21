@@ -1,0 +1,66 @@
+/*
+ * ${basePackage}
+ * ${name}
+ * ${toApiFull}
+ * ${toApiNotFull}
+ * ${toDomain}
+ */
+package ${basePackage}.api.dts;
+
+import ${basePackage}.api.dto.${name}DTO;
+import ${basePackage}.persistence.entities.${name};
+import eu.lpinto.universe.api.dts.AbstractDTS;
+import eu.lpinto.universe.api.dts.UserDTS;
+
+/**
+ * ${name} DTS - Data Transformation Service
+ *
+ * @author Universe Framework's script
+ */
+public class ${name}DTS extends AbstractDTS<${name}, ${name}DTO> {
+
+    public static final ${name}DTS T = new ${name}DTS();
+
+    @Override
+    public ${name}DTO toAPI(${name} entity) {
+        if (entity == null) {
+            return null;
+        } else if (entity.isFull()) {
+            return new ${name}DTO(${toApiFull}
+                    entity.getName(),
+                    UserDTS.id(entity.getCreator()),
+                    entity.getCreated(),
+                    UserDTS.id(entity.getUpdater()),
+                    entity.getUpdated(),
+                    entity.getId());
+        } else {
+            return new ${name}DTO(${toApiNotFull}
+                    entity.getName(),
+                    UserDTS.id(entity.getCreator()),
+                    entity.getCreated(),
+                    UserDTS.id(entity.getUpdater()),
+                    entity.getUpdated(),
+                    entity.getId());
+        }
+    }
+
+    @Override
+    public ${name} toDomain(Long id) {
+        if (id == null) {
+            return null;
+        }
+
+        return new ${name}(id);
+    }
+
+    @Override
+    public ${name} toDomain(${name}DTO dto) {
+        return new ${name}(${toDomain}
+                dto.getName(),
+                UserDTS.T.toDomain(dto.getCreator()),
+                dto.getCreated(),
+                UserDTS.T.toDomain(dto.getUpdater()),
+                dto.getUpdated(),
+                dto.getId());
+    }
+}

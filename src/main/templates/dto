@@ -1,0 +1,38 @@
+/*
+ * ${package}
+ * ${name}
+ * ${fields}
+ * ${constructor}
+ * ${methods}
+ */
+package ${package};
+
+import eu.lpinto.universe.api.dto.AbstractDTO;
+import java.io.Serializable;
+import java.util.Calendar;
+
+/**
+ * ${name} DTO - Data Transportation Object
+ *
+ * @author Universe Framework's script
+ */
+public class ${name}DTO extends AbstractDTO implements Serializable {
+
+    public static final long serialVersionUID = 1L;
+
+${fields}
+    /*
+     * Constructors
+     */
+    public ${name}DTO() {
+        super();
+    }
+
+    public ${name}DTO(final Long id) {
+        super(id);
+    }
+
+${constructor}
+    /*
+     * Getters/Setters
+     */${methods}}
