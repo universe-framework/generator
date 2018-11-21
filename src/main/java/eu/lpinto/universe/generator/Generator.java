@@ -23,56 +23,96 @@ import java.util.List;
 public class Generator {
 
     static public void main(String[] args) throws IOException {
-        String baseDirectory = null;
+        String baseDirectory = null; // Set this you what to hardcode the project base directory path
+        List<String> filesToSkip = null;
 
-        if (baseDirectory == null && args.length != 1) {
-            System.out.println("Usage: a parametter with a path to explore or set it hardcoded in this function.");
-        } else if (args.length == 1) {
+        /*
+         * use the parameter if it exists
+         */
+        if (args.length == 1) {
             baseDirectory = args[0];
-        }
 
-        List<ClassInfo> classesInfo = new ArrayList<>(20);
-        exploreDirectory(baseDirectory, classesInfo);
-
-        for (ClassInfo classsInfo : classesInfo) {
-            File base = new File(classsInfo.path).getParentFile().getParentFile().getParentFile();
-            String basePackage = classsInfo.path.split("java/")[1].split("/persistence")[0].replaceAll("/", ".");
-
-            /* Facade */
-            printFacade(base, basePackage, classsInfo);
-
-            /* Controller */
-            printController(base, basePackage, classsInfo);
-
-            /* DTO */
-            printDTO(base, basePackage, classsInfo);
-
-            /* DTS */
-            printDTS(base, basePackage, classsInfo);
-
-            /* Service */
-            printService(base, basePackage, classsInfo);
-        }
-    }
-
-    static private void exploreDirectory(String entitiesDir, List<ClassInfo> classesInfo) throws IOException {
-        if (entitiesDir.contains("/.")) {
+        } else if (baseDirectory == null) {
+            System.out.println("Usage: pass a parametter with a path to explore or set it hardcoded in this function.");
             return;
         }
 
-        File directory = new File(entitiesDir);
+        if (baseDirectory.endsWith("/") == false) {
+            baseDirectory += "/";
+        }
+
+        /*
+         * Universe config file
+         */
+        File userHome = new File(System.getProperty("user.home") + "/" + UniverseConfiguration.UNIVERSE_FOLDER);
+        File props = new File(userHome.getCanonicalPath() + "/" + UniverseConfiguration.FILE_NAME);
+
+        if (userHome.exists() && props.exists()) {
+            UniverseConfiguration properties = new UniverseConfiguration(props.getCanonicalPath());
+            filesToSkip = properties.getGeneratorFilesToSlip();
+        } else {
+            userHome.mkdirs();
+        }
+        if (filesToSkip == null) {
+            filesToSkip = new ArrayList<>(0);
+        }
+
+        System.out.println("Will skip:");
+        for (String s : filesToSkip) {
+            System.out.println("    " + s);
+        }
+
+        /*
+         * Exploration
+         */
+        List<ClassInfo> classesInfo = new ArrayList<>(20);
+        exploreDirectory(baseDirectory, classesInfo);
+
+        System.out.println("Created:");
+
+        for (ClassInfo classInfo : classesInfo) {
+            File base = new File(classInfo.path).getParentFile().getParentFile().getParentFile();
+            String basePackage = classInfo.path.split("java/")[1].split("/persistence")[0].replaceAll("/", ".");
+
+            if (filesToSkip.contains(basePackage + ".persistence.entities." + classInfo.getName())) {
+                continue; // if is declared in the config file to be skiped
+            }
+
+            /* Facade */
+            printFacade(base, basePackage, classInfo);
+
+            /* Controller */
+            printController(base, basePackage, classInfo);
+
+            /* DTO */
+            printDTO(base, basePackage, classInfo);
+
+            /* DTS */
+            printDTS(base, basePackage, classInfo);
+
+            /* Service */
+            printService(base, basePackage, classInfo);
+        }
+    }
+
+    static private void exploreDirectory(String dirPath, List<ClassInfo> classesInfo) throws IOException {
+        if (dirPath.contains("/.")) {
+            return;
+        }
+
+        File directory = new File(dirPath);
         String[] files = directory.list();
 
         if (files != null) {
             for (String fileName : files) {
 
-                File aux = new File(entitiesDir + fileName);
+                File aux = new File(dirPath + fileName);
 
                 if (aux.isDirectory()) {
-                    exploreDirectory(entitiesDir + fileName + "/", classesInfo);
+                    exploreDirectory(dirPath + fileName + "/", classesInfo);
 
                 } else if (aux.isFile() && aux.getName().endsWith(".java")) {
-                    ClassInfo buildClassInfo = buildClassInfo(entitiesDir + fileName);
+                    ClassInfo buildClassInfo = buildClassInfo(dirPath + fileName);
 
                     if (buildClassInfo != null) {
                         classesInfo.add(buildClassInfo);
@@ -118,21 +158,22 @@ public class Generator {
     /*
      * Facades
      */
-    private static void printFacade(File baseDir, String basePackage, ClassInfo classsInfo) throws IOException, FileNotFoundException {
+    private static void printFacade(File baseDir, String basePackage, ClassInfo classInfo) throws IOException, FileNotFoundException {
         File dir = new File(baseDir + "/persistence/facades/");
 
         if (dir.exists() == false) {
             dir.mkdirs();
         }
 
-        File newFile = new File(dir.getAbsolutePath() + "/" + classsInfo.getName() + "Facade.java");
+        File newFile = new File(dir.getCanonicalPath() + "/" + classInfo.getName() + "Facade.java");
 
         if (newFile.exists() == false) {
             Writer writer;
             writer = new OutputStreamWriter(new FileOutputStream(newFile.getAbsoluteFile()), StandardCharsets.UTF_8);
-            String content = buildFacade(basePackage, classsInfo);
+            String content = buildFacade(basePackage, classInfo);
             writer.write(content);
             writer.close();
+            System.out.println("    " + newFile.getCanonicalPath());
         }
     }
 
@@ -152,21 +193,22 @@ public class Generator {
     /*
      * Controllers
      */
-    private static void printController(File baseDir, String basePackage, ClassInfo classsInfo) throws IOException, FileNotFoundException {
+    private static void printController(File baseDir, String basePackage, ClassInfo classInfo) throws IOException, FileNotFoundException {
         File dir = new File(baseDir + "/controllers/");
 
         if (dir.exists() == false) {
             dir.mkdirs();
         }
 
-        File newFile = new File(dir.getAbsolutePath() + "/" + classsInfo.getName() + "Controller.java");
+        File newFile = new File(dir.getCanonicalPath() + "/" + classInfo.getName() + "Controller.java");
 
         if (newFile.exists() == false) {
             Writer writer;
             writer = new OutputStreamWriter(new FileOutputStream(newFile.getAbsoluteFile()), StandardCharsets.UTF_8);
-            String content = buildController(basePackage, classsInfo);
+            String content = buildController(basePackage, classInfo);
             writer.write(content);
             writer.close();
+            System.out.println("    " + newFile.getCanonicalPath());
         }
     }
 
@@ -187,21 +229,22 @@ public class Generator {
     /*
      * DTO
      */
-    private static void printDTO(File baseDir, String basePackage, ClassInfo classsInfo) throws IOException, FileNotFoundException {
+    private static void printDTO(File baseDir, String basePackage, ClassInfo classInfo) throws IOException, FileNotFoundException {
         File dir = new File(baseDir + "/api/dto/");
 
         if (dir.exists() == false) {
             dir.mkdirs();
         }
 
-        File newFile = new File(dir.getAbsolutePath() + "/" + classsInfo.getName() + "DTO.java");
+        File newFile = new File(dir.getCanonicalPath() + "/" + classInfo.getName() + "DTO.java");
 
         if (newFile.exists() == false) {
             Writer writer;
             writer = new OutputStreamWriter(new FileOutputStream(newFile.getAbsoluteFile()), StandardCharsets.UTF_8);
-            String content = buildDTO(basePackage, classsInfo);
+            String content = buildDTO(basePackage, classInfo);
             writer.write(content);
             writer.close();
+            System.out.println("    " + newFile.getCanonicalPath());
         }
     }
 
@@ -276,21 +319,22 @@ public class Generator {
     /*
      * DTS
      */
-    private static void printDTS(File baseDir, String basePackage, ClassInfo classsInfo) throws IOException, FileNotFoundException {
+    private static void printDTS(File baseDir, String basePackage, ClassInfo classInfo) throws IOException, FileNotFoundException {
         File dir = new File(baseDir + "/api/dts/");
 
         if (dir.exists() == false) {
             dir.mkdirs();
         }
 
-        File newFile = new File(dir.getAbsolutePath() + "/" + classsInfo.getName() + "DTS.java");
+        File newFile = new File(dir.getCanonicalPath() + "/" + classInfo.getName() + "DTS.java");
 
         if (newFile.exists() == false) {
             Writer writer;
             writer = new OutputStreamWriter(new FileOutputStream(newFile.getAbsoluteFile()), StandardCharsets.UTF_8);
-            String content = buildDTS(basePackage, classsInfo);
+            String content = buildDTS(basePackage, classInfo);
             writer.write(content);
             writer.close();
+            System.out.println("    " + newFile.getCanonicalPath());
         }
     }
 
@@ -372,21 +416,22 @@ public class Generator {
     /*
      * Service
      */
-    private static void printService(File baseDir, String basePackage, ClassInfo classsInfo) throws IOException, FileNotFoundException {
+    private static void printService(File baseDir, String basePackage, ClassInfo classInfo) throws IOException, FileNotFoundException {
         File dir = new File(baseDir + "/api/services/");
 
         if (dir.exists() == false) {
             dir.mkdirs();
         }
 
-        File newFile = new File(dir.getAbsolutePath() + "/" + classsInfo.getName() + "Service.java");
+        File newFile = new File(dir.getCanonicalPath() + "/" + classInfo.getName() + "Service.java");
 
         if (newFile.exists() == false) {
             Writer writer;
             writer = new OutputStreamWriter(new FileOutputStream(newFile.getAbsoluteFile()), StandardCharsets.UTF_8);
-            String content = buildService(basePackage, classsInfo);
+            String content = buildService(basePackage, classInfo);
             writer.write(content);
             writer.close();
+            System.out.println("    " + newFile.getCanonicalPath());
         }
     }
 
