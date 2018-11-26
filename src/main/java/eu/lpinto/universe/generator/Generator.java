@@ -362,7 +362,7 @@ public class Generator {
 
             if (fieldInfo.getType().equals(fieldInfo.getDtoType())) {
                 // not FK
-                sb.append("entity.get").append(toUpperCamelCase(fieldInfo.getName())).append("(),\n");
+                sb.append("entity.get").append(toUpperCamelCase(fieldInfo.getName())).append("(),");
             } else {
                 // FK
                 sb.append(toUpperCamelCase(fieldInfo.getType())).append("DTS.id(entity.get").append(toUpperCamelCase(fieldInfo.getType())).append("()),");
@@ -382,7 +382,7 @@ public class Generator {
 
             if (fieldInfo.getType().equals(fieldInfo.getDtoType())) {
                 // not FK
-                sb.append("entity.get").append(toUpperCamelCase(fieldInfo.getName())).append("(),\n");
+                sb.append("entity.get").append(toUpperCamelCase(fieldInfo.getName())).append("(),");
             } else {
                 // FK
                 sb.append("null, // ").append(fieldInfo.getName());
@@ -402,7 +402,7 @@ public class Generator {
 
             if (fieldInfo.getType().equals(fieldInfo.getDtoType())) {
                 // not FK
-                sb.append("dto.get").append(toUpperCamelCase(fieldInfo.getName())).append("(),\n");
+                sb.append("dto.get").append(toUpperCamelCase(fieldInfo.getName())).append("(),");
             } else {
                 // FK
                 sb.append(toUpperCamelCase(fieldInfo.getType())).append("DTS.T.toDomain(dto.get").append(toUpperCamelCase(fieldInfo.getType())).append("()),");
@@ -470,13 +470,13 @@ public class Generator {
         }
 
         public void setType(String type) {
-
             if (type.startsWith("List")) {
                 this.dtoType = "List<Long>";
                 this.type = type;
 
-            } else if (Arrays.asList("Integer", "Long", "Double", "Float", "Calendar").contains(type)) {
+            } else if (Arrays.asList("Integer", "Short", "Long", "Double", "Float", "Calendar", "String", "LocalDate", "LocalTime", "Date").contains(type)) {
                 this.type = type;
+                this.dtoType = type;
 
             } else {
                 this.dtoType = "Long";
